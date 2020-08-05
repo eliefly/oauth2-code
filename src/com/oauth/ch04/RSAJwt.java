@@ -6,7 +6,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
@@ -16,7 +22,7 @@ public class RSAJwt {
     public static Map<String, byte[]> map = new HashMap<String, byte[]>();
 
     public static void main(String[] args) throws Exception {
-//        // 加密
+        // 加密
         String token = generateToken(1000, "secert123");
         // 解密
         decode(token);
@@ -24,21 +30,25 @@ public class RSAJwt {
 
     public static void decode(String token) throws Exception {
         getInfoFromToken(token, map.get("pub"));
-
     }
 
     // 打印解密后的数据
     public static void getInfoFromToken(String token, byte[] pubKey) throws Exception {
         Jws<Claims> claimsJws = parserToken(token, pubKey);
         Claims body = claimsJws.getBody();
-        System.out.println("body:" + body.getSubject());
-        System.out.println("id:" + body.get("id"));
+        System.out.println("sub:" + body.getSubject());
+        System.out.println("iss:" + body.getIssuer());
+        System.out.println("id:" + body.getId());
         System.out.println("name:" + body.get("name"));
     }
 
     // 解析加密过的token，解析成Claims，就是自定义的playload部分
     public static Jws<Claims> parserToken(String token, byte[] pubKey) throws Exception {
-        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(getPublicKey(pubKey)).parseClaimsJws(token);
+//        Jws<Claims> claimsJws = Jwts.parser()
+//                .setSigningKey(getPublicKey(pubKey)).parseClaimsJws(token);
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(getPublicKey(pubKey))
+                .build().parseClaimsJws(token);
         return claimsJws;
     }
 
@@ -61,13 +71,19 @@ public class RSAJwt {
 
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put("typ", "JWT");
-        headerMap.put("alg", "HS256");
+        headerMap.put("alg", "RS256");
 
         Map<String, Object> payloadMap = new HashMap<>();
         payloadMap.put("sub", "Tom");
         payloadMap.put("iss", "--");
+        payloadMap.put("jti", "123");
+        payloadMap.put("name", "zhangsan");
 
-        String compactJws = Jwts.builder().setHeaderParams(headerMap).setClaims(payloadMap).signWith(getPrivateKey(key.get("pri")), SignatureAlgorithm.HS256).compact();
+        String compactJws = Jwts.builder()
+                .setHeaderParams(headerMap)
+                .setClaims(payloadMap)
+                .signWith(getPrivateKey(key.get("pri")), SignatureAlgorithm.RS256)
+                .compact();
 
         System.out.println(compactJws);
         return compactJws;
@@ -98,7 +114,7 @@ public class RSAJwt {
     public static Map<String, byte[]> generateKey(String password) throws IOException, NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         SecureRandom secureRandom = new SecureRandom(password.getBytes());
-        keyPairGenerator.initialize(1024, secureRandom);
+        keyPairGenerator.initialize(2048, secureRandom);
         KeyPair keyPair = keyPairGenerator.genKeyPair();
         byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
         byte[] privateKeyBytes = keyPair.getPrivate().getEncoded();

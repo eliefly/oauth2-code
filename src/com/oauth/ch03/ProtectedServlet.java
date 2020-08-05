@@ -1,16 +1,11 @@
 package com.oauth.ch03;
 
-import com.my.util.HttpURLClient;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * **
@@ -23,26 +18,26 @@ public class ProtectedServlet extends HttpServlet {
 
         //省略验证代码
 
-        String accessToken =  request.getParameter("token");
+        String accessToken = request.getParameter("token");
 
         //根据当时授权的token对应的权限范围，做相应的处理动作
         //不同权限对应不同的操作
         String[] scope = OauthServlet.tokenScopeMap.get(accessToken);
 
         StringBuffer sbuf = new StringBuffer();
-        for(int i=0;i<scope.length;i++){
+        for (int i = 0; i < scope.length; i++) {
             sbuf.append(scope[i]).append("|");
         }
 
-        if(sbuf.toString().indexOf("query")>0){
+        if (sbuf.toString().indexOf("query") > 0) {
             queryGoods("");
         }
 
-        if(sbuf.toString().indexOf("add")>0){
+        if (sbuf.toString().indexOf("add") > 0) {
             addGoods("");
         }
 
-        if(sbuf.toString().indexOf("del")>0){
+        if (sbuf.toString().indexOf("del") > 0) {
             delGoods("");
         }
 
@@ -53,25 +48,21 @@ public class ProtectedServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-
-
-
     }
 
-
-    private String queryGoods(String id){
+    private String queryGoods(String id) {
         return "";
     }
 
-    private boolean addGoods(String goods){
+    private boolean addGoods(String goods) {
         return true;
     }
 
-    private boolean delGoods(String id){
+    private boolean delGoods(String id) {
         return true;
     }
 
-    private String queryOrders(String user){
+    private String queryOrders(String user) {
         return "";
     }
 
